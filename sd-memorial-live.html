@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SD Memorial Sanatan Dharm Vidyalaya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Mukta:wght@300;400;600&display=swap" rel="stylesheet">
+
+<!-- ══════════════════════════════════════════════
+  🔥 FIREBASE SETUP — FILL IN YOUR CONFIG BELOW
+  Follow the SETUP GUIDE (sd-memorial-SETUP.html)
+  to get these values from Firebase Console
+══════════════════════════════════════════════ -->
+<script>
+  const FIREBASE_CONFIG = {
+    apiKey:"AIzaSyA9bQBhLZpP-EKdnvLPdxcKfxzqdDPoBdc",
+    authDomain:"sd-memorial-school.firebaseapp.com",
+    projectId:"sd-memorial-school",
+    storageBucket:"sd-memorial-school.firebasestorage.app",
+    messagingSenderId:"583001939114",
+    appId:"1:583001939114:web:ae17f8cdd0a53e8643c4d3",
+  };
+</script>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+<style>
+  :root {
+    --crimson: #7a0019;
+    --gold: #c9971c;
+    --gold-light: #f5d87e;
+    --cream: #fdf8f0;
+    --dark: #1a0a00;
+    --text: #2d1a00;
+    --card-bg: #fff9ee;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Mukta',sans-serif; background:var(--cream); color:var(--text); min-height:100vh; }
+
+  /* ── SETUP BANNER ── */
+  #setup-banner {
+    background: linear-gradient(135deg, #1a3a6b, #0d2244);
+    color: white;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  #setup-banner.hidden { display: none; }
+  #setup-banner .banner-icon { font-size: 1.5rem; }
+  #setup-banner .banner-text { flex: 1; font-size: 0.9rem; line-height: 1.5; }
+  #setup-banner strong { color: #f5d87e; }
+  #setup-banner a { color: #7ec8ff; }
+
+  /* ── HEADER ── */
+  header { background:linear-gradient(135deg,var(--crimson) 0%,#3d000a 60%,#6b0015 100%); color:white; position:sticky; top:0; z-index:100; box-shadow:0 4px 20px rgba(0,0,0,0.4); }
+  .header-top { display:flex; align-items:center; justify-content:space-between; padding:14px 30px; border-bottom:1px solid rgba(201,151,28,0.3); }
+  .school-title { font-family:'Playfair Display',serif; font-size:1.35rem; font-weight:700; color:var(--gold-light); letter-spacing:0.3px; }
+  .school-title span { color:white; font-weight:400; font-size:0.78rem; display:block; }
+  .header-right { display:flex; align-items:center; gap:10px; }
+  .connection-dot { width:8px; height:8px; border-radius:50%; background:#888; display:inline-block; margin-right:4px; transition:background 0.3s; }
+  .connection-dot.connected { background:#4ade80; }
+  .connection-dot.error { background:#f87171; }
+  .connection-status { font-size:0.72rem; opacity:0.7; }
+  .admin-link-btn { background:rgba(201,151,28,0.2); border:1px solid var(--gold); color:var(--gold-light); padding:6px 14px; border-radius:20px; font-size:0.75rem; cursor:pointer; transition:all 0.3s; font-family:'Mukta',sans-serif; }
+  .admin-link-btn:hover { background:var(--gold); color:var(--dark); }
+  nav { display:flex; gap:4px; padding:8px 30px; overflow-x:auto; }
+  nav a { color:rgba(255,255,255,0.85); text-decoration:none; padding:5px 14px; border-radius:20px; font-size:0.88rem; font-weight:600; transition:all 0.25s; white-space:nowrap; }
+  nav a:hover, nav a.active { background:var(--gold); color:var(--dark); }
+
+  /* ── PAGES ── */
+  .page { display:none; }
+  .page.active { display:block; }
+
+  /* ── HERO ── */
+  .hero { background:linear-gradient(160deg,#3d000a 0%,#7a0019 40%,#2d0f00 100%); color:white; padding:80px 30px 60px; text-align:center; position:relative; overflow:hidden; }
+  .hero::before { content:'॥ श्री गणेशाय नमः ॥'; position:absolute; top:18px; left:50%; transform:translateX(-50%); font-size:0.8rem; color:var(--gold); letter-spacing:2px; opacity:0.7; }
+  .hero::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%,rgba(201,151,28,0.15) 0%,transparent 70%); pointer-events:none; }
+  .hero h1 { font-family:'Playfair Display',serif; font-size:clamp(1.8rem,4vw,3rem); font-weight:900; color:var(--gold-light); text-shadow:0 4px 20px rgba(0,0,0,0.5); margin-bottom:16px; position:relative; z-index:1; }
+  .hero p { font-size:1.1rem; opacity:0.9; margin-bottom:30px; position:relative; z-index:1; }
+  .btn { display:inline-block; background:linear-gradient(135deg,var(--gold),#a57a10); color:white; padding:13px 28px; border-radius:50px; text-decoration:none; font-weight:600; font-size:0.95rem; box-shadow:0 4px 18px rgba(0,0,0,0.3); transition:all 0.3s; border:none; cursor:pointer; font-family:'Mukta',sans-serif; position:relative; z-index:1; }
+  .btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.35); }
+  .btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+
+  /* ── SECTION & CARDS ── */
+  .section { padding:50px 30px; max-width:1100px; margin:auto; }
+  .section h2 { font-family:'Playfair Display',serif; font-size:1.9rem; color:var(--crimson); margin-bottom:10px; border-left:4px solid var(--gold); padding-left:14px; }
+  .section .subtitle { color:#888; margin-bottom:30px; font-size:0.9rem; padding-left:18px; }
+  .cards-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; margin-top:24px; }
+  .card { background:var(--card-bg); border:1px solid rgba(201,151,28,0.2); border-radius:16px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,0.06); transition:transform 0.2s,box-shadow 0.2s; }
+  .card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.1); }
+  .card h3 { font-family:'Playfair Display',serif; color:var(--crimson); margin-bottom:10px; font-size:1.15rem; }
+  .card .card-icon { font-size:2rem; margin-bottom:10px; }
+
+  /* ── GALLERY ── */
+  .gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; margin-top:24px; }
+  .gallery-item { border-radius:14px; overflow:hidden; background:#e8e0d0; aspect-ratio:4/3; position:relative; box-shadow:0 3px 14px rgba(0,0,0,0.1); transition:transform 0.2s; }
+  .gallery-item:hover { transform:scale(1.02); }
+  .gallery-item img { width:100%; height:100%; object-fit:cover; display:block; }
+  .gallery-item .caption { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,0.7)); color:white; padding:20px 12px 10px; font-size:0.82rem; }
+  .empty-state { text-align:center; padding:60px; color:#bbb; font-size:1rem; }
+
+  /* ── THOUGHTS ── */
+  .thought-card { background:linear-gradient(135deg,#fff9ee,#fef3db); border:1px solid rgba(201,151,28,0.3); border-left:5px solid var(--gold); border-radius:14px; padding:24px 28px; margin-bottom:20px; position:relative; }
+  .thought-card .quote-icon { font-size:2rem; margin-bottom:8px; }
+  .thought-card .thought-title { font-weight:700; font-size:1rem; margin-bottom:8px; color:var(--crimson); font-family:'Playfair Display',serif; }
+  .thought-card .thought-text { font-size:1rem; line-height:1.7; color:var(--text); }
+  .thought-card .thought-meta { font-size:0.78rem; color:#999; margin-top:12px; }
+
+  /* ── PRINCIPAL ── */
+  .principal-card { background:linear-gradient(135deg,var(--crimson),#3d000a); color:white; border-radius:20px; padding:40px; display:flex; gap:30px; align-items:flex-start; margin-bottom:30px; }
+  .principal-avatar { width:90px; height:90px; border-radius:50%; background:rgba(201,151,28,0.3); border:3px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:2.5rem; flex-shrink:0; overflow:hidden; }
+  .principal-avatar img { width:100%; height:100%; object-fit:cover; }
+  .principal-info h3 { font-family:'Playfair Display',serif; font-size:1.5rem; color:var(--gold-light); }
+  .principal-info p { opacity:0.85; margin-top:6px; line-height:1.6; }
+
+  /* ── CONTACT ── */
+  .contact-info p { padding:10px 0; border-bottom:1px solid rgba(201,151,28,0.15); display:flex; gap:12px; align-items:flex-start; }
+  .contact-info p span:first-child { font-size:1.2rem; }
+
+  /* ── FOOTER ── */
+  footer { background:linear-gradient(135deg,#3d000a,var(--crimson)); color:rgba(255,255,255,0.7); text-align:center; padding:30px 20px; margin-top:60px; font-size:0.85rem; }
+  footer strong { color:var(--gold-light); }
+
+  /* ── LOADING ── */
+  .loading-spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:8px; }
+  .loading-spinner.dark { border-color:rgba(0,0,0,0.1); border-top-color:var(--crimson); }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .page-loader { text-align:center; padding:60px; color:#bbb; }
+
+  /* ══════════════════════════════════
+     ADMIN PANEL
+  ══════════════════════════════════ */
+  .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; backdrop-filter:blur(4px); }
+  .overlay.open { display:flex; align-items:center; justify-content:center; }
+  .modal { background:white; border-radius:20px; padding:36px; width:90%; max-width:480px; box-shadow:0 30px 80px rgba(0,0,0,0.4); animation:slideUp 0.3s ease; max-height:90vh; overflow-y:auto; }
+  @keyframes slideUp { from { transform:translateY(40px);opacity:0; } to { transform:translateY(0);opacity:1; } }
+  .modal h2 { font-family:'Playfair Display',serif; color:var(--crimson); margin-bottom:6px; font-size:1.5rem; }
+  .modal .modal-sub { color:#888; font-size:0.85rem; margin-bottom:24px; }
+  .form-group { margin-bottom:18px; }
+  .form-group label { display:block; font-size:0.85rem; font-weight:600; color:var(--text); margin-bottom:6px; }
+  .form-group input, .form-group textarea, .form-group select { width:100%; padding:11px 14px; border:1.5px solid #e0d5c5; border-radius:10px; font-family:'Mukta',sans-serif; font-size:0.95rem; color:var(--text); background:#fdf8f0; transition:border-color 0.2s; outline:none; }
+  .form-group input:focus, .form-group textarea:focus { border-color:var(--gold); }
+  .form-group textarea { min-height:100px; resize:vertical; }
+  .btn-row { display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
+  .btn-secondary { background:#f0ebe0; color:var(--text); padding:11px 22px; border-radius:50px; border:none; cursor:pointer; font-family:'Mukta',sans-serif; font-weight:600; font-size:0.9rem; transition:background 0.2s; }
+  .btn-secondary:hover { background:#e0d5c0; }
+  .btn-danger { background:#fff0f0; color:#c0392b; border:1px solid #f5c6cb; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:0.78rem; transition:all 0.2s; font-family:'Mukta',sans-serif; }
+  .btn-danger:hover { background:#c0392b; color:white; }
+
+  .admin-panel { display:none; position:fixed; inset:0; background:#f5f0e8; z-index:300; overflow-y:auto; }
+  .admin-panel.open { display:block; }
+  .admin-header { background:linear-gradient(135deg,var(--crimson),#3d000a); color:white; padding:20px 30px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:10; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+  .admin-header h1 { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--gold-light); }
+  .admin-header .back-btn { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:8px 18px; border-radius:20px; cursor:pointer; font-family:'Mukta',sans-serif; font-size:0.85rem; transition:all 0.2s; }
+  .admin-header .back-btn:hover { background:rgba(255,255,255,0.25); }
+  .admin-body { max-width:1000px; margin:0 auto; padding:30px 20px; }
+  .admin-tabs { display:flex; gap:8px; margin-bottom:30px; flex-wrap:wrap; }
+  .admin-tab { padding:10px 22px; border-radius:50px; border:1.5px solid #e0d5c5; cursor:pointer; font-family:'Mukta',sans-serif; font-weight:600; font-size:0.9rem; background:white; color:#888; transition:all 0.2s; }
+  .admin-tab.active { background:var(--crimson); color:white; border-color:var(--crimson); }
+  .admin-section { display:none; }
+  .admin-section.active { display:block; }
+  .admin-card { background:white; border-radius:16px; padding:24px; margin-bottom:16px; box-shadow:0 2px 10px rgba(0,0,0,0.07); border:1px solid #f0e8d8; }
+  .admin-card h3 { font-family:'Playfair Display',serif; color:var(--crimson); margin-bottom:16px; font-size:1.1rem; }
+  .image-preview { width:80px; height:60px; object-fit:cover; border-radius:8px; border:2px solid #e0d5c5; }
+  .list-item { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid #f0e8d8; }
+  .list-item:last-child { border-bottom:none; }
+  .list-item .item-content { flex:1; }
+  .list-item .item-title { font-weight:600; font-size:0.9rem; color:var(--text); }
+  .list-item .item-meta { font-size:0.78rem; color:#aaa; margin-top:2px; }
+  .add-form { background:#fdf8f0; border:1.5px dashed #d4a830; border-radius:14px; padding:20px; margin-top:16px; }
+  .add-form h4 { color:var(--crimson); margin-bottom:14px; font-size:0.95rem; }
+  .upload-progress { height:6px; background:#e0d5c5; border-radius:6px; margin-top:10px; overflow:hidden; display:none; }
+  .upload-progress-bar { height:100%; background:var(--gold); border-radius:6px; transition:width 0.3s; width:0%; }
+
+  /* Toast */
+  .toast { position:fixed; bottom:30px; right:30px; background:#1a3a1a; color:white; padding:14px 22px; border-radius:12px; font-size:0.9rem; z-index:999; box-shadow:0 8px 24px rgba(0,0,0,0.3); display:none; animation:toastIn 0.3s ease; }
+  .toast.show { display:block; }
+  .toast.error { background:#5a0a0a; }
+  @keyframes toastIn { from { transform:translateX(100px);opacity:0; } to { transform:translateX(0);opacity:1; } }
+
+  @media(max-width:600px) {
+    .header-top { padding:12px 16px; }
+    nav { padding:6px 16px; }
+    .hero { padding:60px 16px 40px; }
+    .section { padding:30px 16px; }
+    .principal-card { flex-direction:column; }
+    .modal { padding:24px; }
+    .admin-body { padding:20px 14px; }
+    .admin-header { padding:16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Setup Banner (shows until Firebase is configured) -->
+<div id="setup-banner">
+  <div class="banner-icon">🔧</div>
+  <div class="banner-text">
+    <strong>Firebase Setup Required</strong> — This website needs Firebase to go live.
+    Open the <strong>sd-memorial-SETUP.html</strong> file for step-by-step instructions,
+    then paste your Firebase config keys at the top of this file.
+  </div>
+</div>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header>
+  <div class="header-top">
+    <div class="school-title">
+      SD Memorial Sanatan Dharm Vidyalaya
+      <span>Dabouli West, Kanpur Nagar – 208022</span>
+    </div>
+    <div class="header-right">
+      <span class="connection-dot" id="conn-dot"></span>
+      <span class="connection-status" id="conn-status">Connecting...</span>
+      <button class="admin-link-btn" onclick="openLogin()">🔐 Admin</button>
+    </div>
+  </div>
+  <nav>
+    <a href="#" class="active" onclick="showPage('home',this)">🏠 Home</a>
+    <a href="#" onclick="showPage('about',this)">📖 About</a>
+    <a href="#" onclick="showPage('principal',this)">👨‍💼 Principal</a>
+    <a href="#" onclick="showPage('thoughts',this)">💭 Thoughts</a>
+    <a href="#" onclick="showPage('admissions',this)">📋 Admissions</a>
+    <a href="#" onclick="showPage('gallery',this)">🖼️ Gallery</a>
+    <a href="#" onclick="showPage('contact',this)">📞 Contact</a>
+  </nav>
+</header>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <h1>Welcome to SD Memorial<br>Sanatan Dharm Vidyalaya</h1>
+    <p>Modern education with strong values and discipline.</p>
+    <a class="btn" href="#" onclick="showPage('admissions',null)">Apply for Admission →</a>
+  </div>
+  <div class="section">
+    <h2>Why Choose Us</h2>
+    <div class="cards-grid" id="home-cards">
+      <div class="card"><div class="card-icon">🎯</div><h3>Our Mission</h3><p>To provide quality education with संस्कार and excellence for every child.</p></div>
+      <div class="card"><div class="card-icon">✨</div><h3>Highlights</h3><p>Smart classrooms • Cultural activities • Dedicated and experienced teachers.</p></div>
+      <div class="card"><div class="card-icon">🤝</div><h3>Community</h3><p>A strong family of students, parents and teachers working together.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div class="page" id="page-about">
+  <div class="section">
+    <h2>About Our School</h2>
+    <div class="card" style="margin-top:24px">
+      <p id="about-text" style="line-height:1.8;font-size:1rem;">SD Memorial Sanatan Dharm Vidyalaya is located in Dabouli West, Kanpur Nagar. We focus on academics, culture and discipline.</p>
+    </div>
+    <div class="cards-grid" style="margin-top:24px">
+      <div class="card"><div class="card-icon">🏫</div><h3>Established</h3><p>Serving the community of Kanpur Nagar with dedication and tradition.</p></div>
+      <div class="card"><div class="card-icon">📚</div><h3>Academics</h3><p>Comprehensive curriculum with focus on Sanskrit, Science and Arts.</p></div>
+      <div class="card"><div class="card-icon">🌟</div><h3>Values</h3><p>Rooted in Sanatan Dharm — imparting संस्कार alongside modern knowledge.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRINCIPAL -->
+<div class="page" id="page-principal">
+  <div class="section">
+    <h2>Principal's Desk</h2>
+    <div class="principal-card" style="margin-top:24px">
+      <div class="principal-avatar" id="principal-avatar-display">👨‍🏫</div>
+      <div class="principal-info">
+        <h3 id="principal-name-display">Mr. Priymendra Pal</h3>
+        <p id="principal-msg-display">Welcome to our school. We believe every child can shine with the right guidance and values. Our commitment is to nurture young minds with wisdom, discipline and compassion.</p>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Our Philosophy</h3>
+      <p>Education at SD Memorial is not just about textbooks — it is about shaping citizens who are rooted in culture and ready for tomorrow.</p>
+    </div>
+  </div>
+</div>
+
+<!-- THOUGHTS -->
+<div class="page" id="page-thoughts">
+  <div class="section">
+    <h2>Thoughts & Notices</h2>
+    <p class="subtitle">Messages, announcements and inspiration from the school</p>
+    <div id="thoughts-list"><div class="page-loader"><span class="loading-spinner dark"></span> Loading...</div></div>
+  </div>
+</div>
+
+<!-- ADMISSIONS -->
+<div class="page" id="page-admissions">
+  <div class="section">
+    <h2>Admissions</h2>
+    <div class="card" style="margin-top:24px">
+      <h3>How to Apply</h3>
+      <p style="margin-bottom:18px;line-height:1.7;">We welcome students who are eager to learn and grow. Fill the admission form online using the link below or visit our school office in person.</p>
+      <a class="btn" href="https://forms.gle/g2UPJgkrRq3N4nL76" target="_blank">Open Admission Form ↗</a>
+    </div>
+    <div class="cards-grid" style="margin-top:24px">
+      <div class="card"><div class="card-icon">📅</div><h3>Session</h3><p>Admissions open for the new academic year. Apply early to secure your seat.</p></div>
+      <div class="card"><div class="card-icon">📄</div><h3>Documents</h3><p>Birth certificate, previous school transfer certificate, passport-size photos required.</p></div>
+      <div class="card"><div class="card-icon">📞</div><h3>Enquiry</h3><p>Call +91 91408 79596 or email prakhar8467@gmail.com for any queries.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- GALLERY -->
+<div class="page" id="page-gallery">
+  <div class="section">
+    <h2>Photo Gallery</h2>
+    <p class="subtitle">Moments from our school life — events, activities and memories</p>
+    <div class="gallery-grid" id="gallery-grid"><div class="page-loader" style="grid-column:1/-1"><span class="loading-spinner dark"></span> Loading...</div></div>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div class="page" id="page-contact">
+  <div class="section">
+    <h2>Contact Us</h2>
+    <div class="card" style="margin-top:24px">
+      <div class="contact-info">
+        <p><span>📍</span><span><strong>Address:</strong><br>H No 06, Dabouli West, Kanpur Nagar – 208022</span></p>
+        <p><span>📞</span><span><strong>Phone:</strong> +91 91408 79596</span></p>
+        <p><span>✉️</span><span><strong>Email:</strong> prakhar8467@gmail.com</span></p>
+        <p><span>🕐</span><span><strong>Office Hours:</strong> Mon–Sat, 8:00 AM – 3:00 PM</span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong>SD Memorial Sanatan Dharm Vidyalaya</strong><br>
+  © 2026 | Dabouli West, Kanpur Nagar | All Rights Reserved
+</footer>
+
+<!-- ═══════════════ LOGIN MODAL ═══════════════ -->
+<div class="overlay" id="login-overlay" onclick="if(event.target===this)closeOverlay('login-overlay')">
+  <div class="modal">
+    <h2>🔐 Admin Login</h2>
+    <p class="modal-sub">Enter your credentials to manage the website</p>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="login-user" placeholder="admin" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <p id="login-error" style="color:#c0392b;font-size:0.85rem;display:none;margin-bottom:12px;">❌ Wrong username or password</p>
+    <div class="btn-row">
+      <button class="btn" onclick="doLogin()" id="login-btn">Login</button>
+      <button class="btn-secondary" onclick="closeOverlay('login-overlay')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ ADMIN PANEL ═══════════════ -->
+<div class="admin-panel" id="admin-panel">
+  <div class="admin-header">
+    <div>
+      <h1>⚙️ Admin Panel</h1>
+      <div style="font-size:0.78rem;opacity:0.7;margin-top:2px;">SD Memorial — Website Manager</div>
+    </div>
+    <button class="back-btn" onclick="closeAdmin()">← Back to Website</button>
+  </div>
+  <div class="admin-body">
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchTab('tab-gallery',this)">🖼️ Gallery</button>
+      <button class="admin-tab" onclick="switchTab('tab-thoughts',this)">💭 Thoughts</button>
+      <button class="admin-tab" onclick="switchTab('tab-content',this)">✏️ Edit Content</button>
+      <button class="admin-tab" onclick="switchTab('tab-settings',this)">🔒 Settings</button>
+    </div>
+
+    <!-- TAB: GALLERY -->
+    <div class="admin-section active" id="tab-gallery">
+      <div class="admin-card">
+        <h3>📸 Upload New Photo</h3>
+        <div class="add-form">
+          <div class="form-group">
+            <label>📁 Upload from Device <span style="color:#888;font-size:0.8rem">(Photo uploads to cloud)</span></label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;background:white;border:1.5px solid #d4a830;padding:12px 16px;border-radius:10px;width:fit-content;font-weight:600;color:var(--text);font-size:0.9rem">
+              📷 Choose Photo
+              <input type="file" accept="image/*" style="display:none" id="gallery-file-input" onchange="handleGalleryFileSelect(this)">
+            </label>
+            <div id="selected-file-name" style="margin-top:6px;font-size:0.82rem;color:#888;"></div>
+            <div class="upload-progress" id="upload-progress">
+              <div class="upload-progress-bar" id="upload-progress-bar"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Or paste Image URL</label>
+            <input type="text" id="new-img-url" placeholder="https://example.com/photo.jpg" />
+          </div>
+          <div class="form-group">
+            <label>Caption (optional)</label>
+            <input type="text" id="new-img-caption" placeholder="Sports Day 2025" />
+          </div>
+          <button class="btn" id="add-photo-btn" onclick="addGalleryImage()">☁️ Upload to Cloud</button>
+        </div>
+      </div>
+      <div class="admin-card">
+        <h3>All Photos <span id="gallery-count" style="color:#aaa;font-weight:400;font-size:0.9rem"></span></h3>
+        <div id="admin-gallery-list"><span class="loading-spinner dark"></span> Loading...</div>
+      </div>
+    </div>
+
+    <!-- TAB: THOUGHTS -->
+    <div class="admin-section" id="tab-thoughts">
+      <div class="admin-card">
+        <h3>💭 Post New Message</h3>
+        <div class="add-form">
+          <div class="form-group">
+            <label>Title / Heading</label>
+            <input type="text" id="new-thought-title" placeholder="Important Notice" />
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea id="new-thought-text" placeholder="Write your announcement or thought here..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Type</label>
+            <select id="new-thought-type">
+              <option value="thought">💬 Principal's Thought</option>
+              <option value="notice">📣 Notice / Announcement</option>
+              <option value="achievement">🏆 Achievement</option>
+            </select>
+          </div>
+          <button class="btn" id="post-btn" onclick="addThought()">☁️ Publish to Website</button>
+        </div>
+      </div>
+      <div class="admin-card">
+        <h3>All Posts</h3>
+        <div id="admin-thoughts-list"><span class="loading-spinner dark"></span> Loading...</div>
+      </div>
+    </div>
+
+    <!-- TAB: CONTENT -->
+    <div class="admin-section" id="tab-content">
+      <div class="admin-card">
+        <h3>✏️ About School Text</h3>
+        <div class="form-group">
+          <textarea id="edit-about" rows="4" placeholder="About school text..."></textarea>
+        </div>
+        <button class="btn" onclick="saveContent('about')">Save to Cloud</button>
+      </div>
+      <div class="admin-card">
+        <h3>👨‍💼 Principal Details</h3>
+        <div class="form-group">
+          <label>Principal Name</label>
+          <input type="text" id="edit-principal-name" placeholder="Mr. ..." />
+        </div>
+        <div class="form-group">
+          <label>Principal Message</label>
+          <textarea id="edit-principal-msg" rows="4"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Principal Photo</label>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;background:#f0ebe0;padding:10px 16px;border-radius:50px;width:fit-content;font-weight:600;font-size:0.85rem;margin-bottom:8px">
+            📁 Upload Photo
+            <input type="file" accept="image/*" style="display:none" onchange="uploadPrincipalPhoto(this)">
+          </label>
+          <input type="text" id="edit-principal-photo" placeholder="Or paste photo URL..." />
+        </div>
+        <button class="btn" onclick="saveContent('principal')">Save to Cloud</button>
+      </div>
+      <div class="admin-card">
+        <h3>🏠 Home Page Cards</h3>
+        <div class="form-group"><label>Card 1 – Title</label><input type="text" id="edit-card1-title" /></div>
+        <div class="form-group"><label>Card 1 – Text</label><textarea id="edit-card1-text" rows="2"></textarea></div>
+        <div class="form-group"><label>Card 2 – Title</label><input type="text" id="edit-card2-title" /></div>
+        <div class="form-group"><label>Card 2 – Text</label><textarea id="edit-card2-text" rows="2"></textarea></div>
+        <div class="form-group"><label>Card 3 – Title</label><input type="text" id="edit-card3-title" /></div>
+        <div class="form-group"><label>Card 3 – Text</label><textarea id="edit-card3-text" rows="2"></textarea></div>
+        <button class="btn" onclick="saveContent('cards')">Save to Cloud</button>
+      </div>
+    </div>
+
+    <!-- TAB: SETTINGS -->
+    <div class="admin-section" id="tab-settings">
+      <div class="admin-card">
+        <h3>🔒 Change Admin Password</h3>
+        <div class="form-group"><label>Current Password</label><input type="password" id="cur-pass" /></div>
+        <div class="form-group"><label>New Password</label><input type="password" id="new-pass" /></div>
+        <div class="form-group"><label>Confirm New Password</label><input type="password" id="conf-pass" /></div>
+        <p id="pass-error" style="color:#c0392b;font-size:0.85rem;display:none;margin-bottom:10px;"></p>
+        <button class="btn" onclick="changePassword()">Update Password</button>
+      </div>
+      <div class="admin-card" style="border:1.5px solid #f5c6cb">
+        <h3 style="color:#c0392b">⚠️ Danger Zone</h3>
+        <p style="font-size:0.9rem;margin-bottom:16px;color:#888">Delete all photos and posts. Cannot be undone.</p>
+        <button class="btn-secondary" style="background:#fff0f0;color:#c0392b" onclick="resetAll()">Delete All Content</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════ JAVASCRIPT ═══════════════ -->
+<script>
+// ─────────────────────────────────────────────
+//  FIREBASE INIT
+// ─────────────────────────────────────────────
+let db, storage, firebaseReady = false;
+
+const DEFAULTS = {
+  about: "SD Memorial Sanatan Dharm Vidyalaya is located in Dabouli West, Kanpur Nagar. We focus on academics, culture and discipline. Our school provides an environment where students grow intellectually, culturally, and morally.",
+  principalName: "Mr. Priymendra Pal",
+  principalMsg: "Welcome to our school. We believe every child can shine with the right guidance and values.",
+  principalPhoto: "",
+  cards: [
+    { icon:"🎯", title:"Our Mission", text:"To provide quality education with संस्कार and excellence for every child." },
+    { icon:"✨", title:"Highlights", text:"Smart classrooms • Cultural activities • Dedicated and experienced teachers." },
+    { icon:"🤝", title:"Community", text:"A strong family of students, parents and teachers working together." }
+  ],
+  password: "sdmemorial2026"
+};
+
+function initFirebase() {
+  // Check if config has been filled
+  if (FIREBASE_CONFIG.apiKey === "PASTE_YOUR_API_KEY_HERE") {
+    setConnectionStatus('error', 'Not configured');
+    return;
+  }
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+    storage = firebase.storage();
+    firebaseReady = true;
+    document.getElementById('setup-banner').classList.add('hidden');
+    setConnectionStatus('connected', 'Live');
+    loadPublicData();
+  } catch(e) {
+    setConnectionStatus('error', 'Error');
+    showToast('Firebase error: ' + e.message, true);
+  }
+}
+
+function setConnectionStatus(state, text) {
+  const dot = document.getElementById('conn-dot');
+  const status = document.getElementById('conn-status');
+  dot.className = 'connection-dot ' + state;
+  status.textContent = text;
+}
+
+// ─────────────────────────────────────────────
+//  AUTH
+// ─────────────────────────────────────────────
+let isLoggedIn = false;
+const ADMIN_USERNAME = "admin";
+
+async function getPassword() {
+  if (!firebaseReady) return DEFAULTS.password;
+  try {
+    const doc = await db.collection('settings').doc('auth').get();
+    return doc.exists ? (doc.data().password || DEFAULTS.password) : DEFAULTS.password;
+  } catch(e) { return DEFAULTS.password; }
+}
+
+function openLogin() {
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('login-user').focus(), 100);
+}
+
+async function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const btn = document.getElementById('login-btn');
+  btn.innerHTML = '<span class="loading-spinner"></span> Checking...';
+  btn.disabled = true;
+  const correctPass = await getPassword();
+  btn.innerHTML = 'Login';
+  btn.disabled = false;
+  if (u === ADMIN_USERNAME && p === correctPass) {
+    isLoggedIn = true;
+    closeOverlay('login-overlay');
+    openAdmin();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
+
+// ─────────────────────────────────────────────
+//  ADMIN PANEL
+// ─────────────────────────────────────────────
+function openAdmin() {
+  document.getElementById('admin-panel').classList.add('open');
+  loadAdminGallery();
+  loadAdminThoughts();
+  loadAdminContent();
+}
+
+function closeAdmin() {
+  document.getElementById('admin-panel').classList.remove('open');
+}
+
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─────────────────────────────────────────────
+//  GALLERY – CLOUD
+// ─────────────────────────────────────────────
+let selectedGalleryFile = null;
+
+function handleGalleryFileSelect(input) {
+  selectedGalleryFile = input.files[0];
+  if (selectedGalleryFile) {
+    document.getElementById('selected-file-name').textContent = '📄 ' + selectedGalleryFile.name;
+  }
+}
+
+async function addGalleryImage() {
+  if (!firebaseReady) { showToast('Firebase not configured yet!', true); return; }
+  const caption = document.getElementById('new-img-caption').value.trim();
+  const urlInput = document.getElementById('new-img-url').value.trim();
+  const btn = document.getElementById('add-photo-btn');
+
+  if (!selectedGalleryFile && !urlInput) {
+    showToast('Please select a photo or paste a URL', true);
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span> Uploading...';
+
+  try {
+    let downloadURL = urlInput;
+
+    if (selectedGalleryFile) {
+      // Upload to Firebase Storage
+      const progress = document.getElementById('upload-progress');
+      const bar = document.getElementById('upload-progress-bar');
+      progress.style.display = 'block';
+
+      const fileName = `gallery/${Date.now()}_${selectedGalleryFile.name}`;
+      const ref = storage.ref().child(fileName);
+      const uploadTask = ref.put(selectedGalleryFile);
+
+      downloadURL = await new Promise((resolve, reject) => {
+        uploadTask.on('state_changed',
+          snapshot => {
+            const pct = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            bar.style.width = pct + '%';
+          },
+          reject,
+          async () => { resolve(await uploadTask.snapshot.ref.getDownloadURL()); }
+        );
+      });
+      progress.style.display = 'none';
+      bar.style.width = '0%';
+    }
+
+    await db.collection('gallery').add({
+      url: downloadURL,
+      caption,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    document.getElementById('new-img-url').value = '';
+    document.getElementById('new-img-caption').value = '';
+    document.getElementById('selected-file-name').textContent = '';
+    document.getElementById('gallery-file-input').value = '';
+    selectedGalleryFile = null;
+
+    showToast('✅ Photo uploaded to cloud!');
+    loadAdminGallery();
+    loadGallery();
+  } catch(e) {
+    showToast('Upload failed: ' + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '☁️ Upload to Cloud';
+  }
+}
+
+async function deleteGalleryItem(docId, imageUrl) {
+  if (!confirm('Delete this photo from the cloud?')) return;
+  try {
+    await db.collection('gallery').doc(docId).delete();
+    // Try to delete from storage too
+    if (imageUrl && imageUrl.includes('firebasestorage')) {
+      try { await storage.refFromURL(imageUrl).delete(); } catch(e) {}
+    }
+    showToast('🗑️ Photo deleted from cloud');
+    loadAdminGallery();
+    loadGallery();
+  } catch(e) {
+    showToast('Delete failed: ' + e.message, true);
+  }
+}
+
+async function loadAdminGallery() {
+  if (!firebaseReady) { document.getElementById('admin-gallery-list').innerHTML = '<p style="color:#bbb">Firebase not configured</p>'; return; }
+  const el = document.getElementById('admin-gallery-list');
+  el.innerHTML = '<span class="loading-spinner dark"></span> Loading...';
+  try {
+    const snap = await db.collection('gallery').orderBy('createdAt','desc').get();
+    document.getElementById('gallery-count').textContent = `(${snap.size} photos)`;
+    if (snap.empty) { el.innerHTML = '<p style="color:#bbb;font-size:0.9rem;padding:10px 0">No photos yet.</p>'; return; }
+    el.innerHTML = snap.docs.map(doc => {
+      const d = doc.data();
+      return `<div class="list-item">
+        <img src="${d.url}" class="image-preview" onerror="this.style.background='#eee'" alt="">
+        <div class="item-content">
+          <div class="item-title">${d.caption || '(No caption)'}</div>
+          <div class="item-meta">Added ${d.createdAt ? d.createdAt.toDate().toLocaleDateString('en-IN') : 'Just now'}</div>
+        </div>
+        <button class="btn-danger" onclick="deleteGalleryItem('${doc.id}','${d.url}')">Delete</button>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<p style="color:#c0392b">Error: ' + e.message + '</p>'; }
+}
+
+async function loadGallery() {
+  if (!firebaseReady) return;
+  const grid = document.getElementById('gallery-grid');
+  try {
+    const snap = await db.collection('gallery').orderBy('createdAt','desc').get();
+    if (snap.empty) {
+      grid.innerHTML = '<div class="empty-state">📷<br><br>No photos yet.<br>Login as admin to upload photos!</div>';
+      return;
+    }
+    grid.innerHTML = snap.docs.map(doc => {
+      const d = doc.data();
+      return `<div class="gallery-item">
+        <img src="${d.url}" alt="${d.caption||''}" loading="lazy">
+        ${d.caption ? `<div class="caption">${d.caption}</div>` : ''}
+      </div>`;
+    }).join('');
+  } catch(e) { grid.innerHTML = '<div class="empty-state">Could not load photos</div>'; }
+}
+
+// ─────────────────────────────────────────────
+//  THOUGHTS – CLOUD
+// ─────────────────────────────────────────────
+const TYPE_ICONS  = { thought:'💬', notice:'📣', achievement:'🏆' };
+const TYPE_LABELS = { thought:"Principal's Thought", notice:"Notice", achievement:"Achievement" };
+
+async function addThought() {
+  if (!firebaseReady) { showToast('Firebase not configured yet!', true); return; }
+  const title = document.getElementById('new-thought-title').value.trim();
+  const text  = document.getElementById('new-thought-text').value.trim();
+  const type  = document.getElementById('new-thought-type').value;
+  if (!text) { showToast('Please write a message', true); return; }
+
+  const btn = document.getElementById('post-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span> Publishing...';
+
+  try {
+    await db.collection('thoughts').add({ title, text, type, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    document.getElementById('new-thought-title').value = '';
+    document.getElementById('new-thought-text').value = '';
+    showToast('✅ Published to website!');
+    loadAdminThoughts();
+    loadThoughts();
+  } catch(e) {
+    showToast('Failed: ' + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '☁️ Publish to Website';
+  }
+}
+
+async function deleteThought(docId) {
+  if (!confirm('Delete this post?')) return;
+  try {
+    await db.collection('thoughts').doc(docId).delete();
+    showToast('🗑️ Post deleted');
+    loadAdminThoughts();
+    loadThoughts();
+  } catch(e) { showToast('Error: ' + e.message, true); }
+}
+
+async function loadAdminThoughts() {
+  if (!firebaseReady) { document.getElementById('admin-thoughts-list').innerHTML = '<p style="color:#bbb">Firebase not configured</p>'; return; }
+  const el = document.getElementById('admin-thoughts-list');
+  el.innerHTML = '<span class="loading-spinner dark"></span>';
+  try {
+    const snap = await db.collection('thoughts').orderBy('createdAt','desc').get();
+    if (snap.empty) { el.innerHTML = '<p style="color:#bbb;font-size:0.9rem;padding:10px 0">No posts yet.</p>'; return; }
+    el.innerHTML = snap.docs.map(doc => {
+      const d = doc.data();
+      return `<div class="list-item">
+        <div style="font-size:1.5rem">${TYPE_ICONS[d.type]||'💬'}</div>
+        <div class="item-content">
+          <div class="item-title">${d.title || TYPE_LABELS[d.type]}</div>
+          <div class="item-meta">${d.text.substring(0,80)}${d.text.length>80?'…':''}</div>
+          <div class="item-meta">Posted ${d.createdAt ? d.createdAt.toDate().toLocaleDateString('en-IN') : 'Just now'}</div>
+        </div>
+        <button class="btn-danger" onclick="deleteThought('${doc.id}')">Delete</button>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<p style="color:#c0392b">Error: ' + e.message + '</p>'; }
+}
+
+async function loadThoughts() {
+  if (!firebaseReady) return;
+  const el = document.getElementById('thoughts-list');
+  try {
+    const snap = await db.collection('thoughts').orderBy('createdAt','desc').get();
+    if (snap.empty) {
+      el.innerHTML = '<div class="card" style="text-align:center;color:#bbb;padding:40px">💭<br><br>No posts yet.<br>Admin can add messages from the admin panel.</div>';
+      return;
+    }
+    el.innerHTML = snap.docs.map(doc => {
+      const d = doc.data();
+      const date = d.createdAt ? d.createdAt.toDate().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : '';
+      return `<div class="thought-card">
+        <div class="quote-icon">${TYPE_ICONS[d.type]||'💬'}</div>
+        ${d.title ? `<div class="thought-title">${d.title}</div>` : ''}
+        <p class="thought-text">${d.text.replace(/\n/g,'<br>')}</p>
+        <p class="thought-meta">${TYPE_LABELS[d.type]||'Message'}${date?' · '+date:''}</p>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<div class="card" style="color:#c0392b">Could not load posts</div>'; }
+}
+
+// ─────────────────────────────────────────────
+//  CONTENT EDITING – CLOUD
+// ─────────────────────────────────────────────
+async function loadAdminContent() {
+  if (!firebaseReady) return;
+  try {
+    const doc = await db.collection('content').doc('site').get();
+    const d = doc.exists ? doc.data() : {};
+    document.getElementById('edit-about').value = d.about || DEFAULTS.about;
+    document.getElementById('edit-principal-name').value = d.principalName || DEFAULTS.principalName;
+    document.getElementById('edit-principal-msg').value = d.principalMsg || DEFAULTS.principalMsg;
+    document.getElementById('edit-principal-photo').value = d.principalPhoto || '';
+    const cards = d.cards || DEFAULTS.cards;
+    ['1','2','3'].forEach((n, i) => {
+      document.getElementById(`edit-card${n}-title`).value = cards[i]?.title || '';
+      document.getElementById(`edit-card${n}-text`).value = cards[i]?.text || '';
+    });
+  } catch(e) {}
+}
+
+async function saveContent(section) {
+  if (!firebaseReady) { showToast('Firebase not configured!', true); return; }
+  const ref = db.collection('content').doc('site');
+  try {
+    const doc = await ref.get();
+    const current = doc.exists ? doc.data() : {};
+    let update = {};
+    if (section === 'about') {
+      update.about = document.getElementById('edit-about').value.trim() || DEFAULTS.about;
+    }
+    if (section === 'principal') {
+      update.principalName = document.getElementById('edit-principal-name').value.trim() || DEFAULTS.principalName;
+      update.principalMsg = document.getElementById('edit-principal-msg').value.trim() || DEFAULTS.principalMsg;
+      update.principalPhoto = document.getElementById('edit-principal-photo').value.trim();
+    }
+    if (section === 'cards') {
+      update.cards = ['1','2','3'].map((n, i) => ({
+        icon: DEFAULTS.cards[i].icon,
+        title: document.getElementById(`edit-card${n}-title`).value.trim() || DEFAULTS.cards[i].title,
+        text: document.getElementById(`edit-card${n}-text`).value.trim() || DEFAULTS.cards[i].text,
+      }));
+    }
+    await ref.set({ ...current, ...update }, { merge: true });
+    showToast('✅ Saved to cloud!');
+    loadPublicContent();
+  } catch(e) { showToast('Error: ' + e.message, true); }
+}
+
+async function uploadPrincipalPhoto(input) {
+  if (!firebaseReady || !input.files[0]) return;
+  const file = input.files[0];
+  showToast('Uploading photo...');
+  try {
+    const ref = storage.ref().child(`principal/${Date.now()}_${file.name}`);
+    const snap = await ref.put(file);
+    const url = await snap.ref.getDownloadURL();
+    document.getElementById('edit-principal-photo').value = url;
+    showToast('✅ Photo uploaded! Click Save to apply.');
+  } catch(e) { showToast('Upload failed: ' + e.message, true); }
+}
+
+async function loadPublicContent() {
+  if (!firebaseReady) return;
+  try {
+    const doc = await db.collection('content').doc('site').get();
+    if (!doc.exists) return;
+    const d = doc.data();
+    if (d.about) document.getElementById('about-text').textContent = d.about;
+    if (d.principalName) document.getElementById('principal-name-display').textContent = d.principalName;
+    if (d.principalMsg) document.getElementById('principal-msg-display').textContent = d.principalMsg;
+    if (d.principalPhoto) {
+      document.getElementById('principal-avatar-display').innerHTML = `<img src="${d.principalPhoto}" alt="Principal">`;
+    }
+    if (d.cards) {
+      document.getElementById('home-cards').innerHTML = d.cards.map(c => `
+        <div class="card"><div class="card-icon">${c.icon}</div><h3>${c.title}</h3><p>${c.text}</p></div>
+      `).join('');
+    }
+  } catch(e) {}
+}
+
+async function loadPublicData() {
+  await Promise.all([loadPublicContent(), loadGallery(), loadThoughts()]);
+}
+
+// ─────────────────────────────────────────────
+//  PASSWORD CHANGE
+// ─────────────────────────────────────────────
+async function changePassword() {
+  const cur  = document.getElementById('cur-pass').value;
+  const nw   = document.getElementById('new-pass').value;
+  const cf   = document.getElementById('conf-pass').value;
+  const err  = document.getElementById('pass-error');
+  err.style.display = 'none';
+  const correctPass = await getPassword();
+  if (cur !== correctPass) { err.textContent='❌ Current password is incorrect'; err.style.display='block'; return; }
+  if (nw.length < 6)       { err.textContent='❌ Password must be at least 6 characters'; err.style.display='block'; return; }
+  if (nw !== cf)            { err.textContent='❌ Passwords do not match'; err.style.display='block'; return; }
+  try {
+    await db.collection('settings').doc('auth').set({ password: nw }, { merge: true });
+    document.getElementById('cur-pass').value = '';
+    document.getElementById('new-pass').value = '';
+    document.getElementById('conf-pass').value = '';
+    showToast('✅ Password updated in cloud!');
+  } catch(e) { showToast('Error: ' + e.message, true); }
+}
+
+async function resetAll() {
+  if (!confirm('Delete ALL photos and posts from the cloud? This cannot be undone.')) return;
+  if (!firebaseReady) return;
+  try {
+    const gSnap = await db.collection('gallery').get();
+    const tSnap = await db.collection('thoughts').get();
+    const batch = db.batch();
+    gSnap.docs.forEach(d => batch.delete(d.ref));
+    tSnap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    showToast('🔄 All content deleted from cloud');
+    loadAdminGallery();
+    loadAdminThoughts();
+    loadGallery();
+    loadThoughts();
+  } catch(e) { showToast('Error: ' + e.message, true); }
+}
+
+// ─────────────────────────────────────────────
+//  PAGE NAV & TOAST
+// ─────────────────────────────────────────────
+function showPage(name, linkEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (linkEl) linkEl.classList.add('active');
+  window.scrollTo({ top: 0, behavior:'smooth' });
+}
+
+let toastTimer;
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ─── INIT ───
+initFirebase();
+</script>
+</body>
+</html>
